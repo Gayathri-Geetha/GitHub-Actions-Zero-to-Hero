@@ -1,0 +1,34 @@
+name: Greetings
+
+on: [push, pull_request_target, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      deployments: write
+      pull-requests: write
+    steps:
+    - name: Send Greeting
+      uses: actions/github-script@v7
+      with:
+          script: |
+            const event = context.eventName;
+
+            let message = "";
+
+            if (event === "push") {
+              message = "🎉 Hello! A new push was made. Great job committing your changes!";
+            } else if (event === "pull_request") {
+              message = "🚀 Thanks for opening a Pull Request! We'll review it shortly.";
+            } else if (event === "issues") {
+              message = "💡 Thanks for opening an issue! We’ll look into it soon.";
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request?.number || context.payload.issue?.number,
+              body: message,
+            });
